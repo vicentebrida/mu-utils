@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" type="text/css" href="../../styles/global.css">
+  <link rel="stylesheet" type="text/css" href="../../styles/theme.css">
+  <link rel="stylesheet" type="text/css" href="./style.css">
+
+  <style>
+    .wrapper {
+      height: 100%;
+      background-color: #44475a;
+    }
+
+    .header {
+      background: #282a36;
+      box-shadow: 0 5px 10px 0 rgba(0,0,0,.15);
+    }
+
+    .header .header-content {
+      height: 64px;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 0 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+    }
+
+    .logo div {
+      margin-right: 20px;
+      padding-right: 20px;
+      border-right: 1px solid #f8f8f2;
+    }
+
+    .logo img {
+      width: 54px;
+      margin-right: 10px;
+    }
+
+    .logo h1 {
+      font-size: 27px;
+      font-weight: bold;
+      color: #bd93f9;
+    }
+
+    nav button {
+      margin: 0 5px;
+    }
+
+    aside {
+      display: flex;
+      align-items: center;
+    }
+
+    .profile {
+      display: flex;
+      margin-left: 20px;
+      padding-left: 20px;
+      border-left: 1px solid #f8f8f2;
+    }
+
+    .profile div {
+      text-align: right;
+      margin-right: 10px;
+    }
+
+    .profile-name {
+      display: block;
+      color: #bd93f9;
+      font-weight: bold;
+    }
+
+    .profile div a {
+      display: block;
+      margin-top: 2px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, .6);
+    }
+
+    .container {
+      max-width: 550px;
+      margin: 25px auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .container .send-print-time {
+      color: #f8f8f2;
+    }
+
+    .container .send-print-time input {
+      margin: 0 5px;
+      width: 70px;
+    }
+  </style>
+</head>
+<body>
+  <div id="root">
+    <div class="wrapper">
+      <div class="header">
+        <div class="header-content">
+          <div class="logo">
+            <div>
+              <h1>Mu Utils</h1>
+            </div>
+          </div>
+
+          <nav>
+            <button class="button button-secondary button-sm" id="logoff"></button>
+            <button class="button button-secondary button-sm" id="about"></button>
+          </nav>
+
+          <aside>
+            <div class="profile">
+              <div>
+                <div class="profile-name"></div>
+                <a>Meu Perfil</a>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+      <div class="container">
+        <div class="alerts"></div>
+        <form>
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="alertDisconnect" value="1" />
+              <span id="textAlertDisconnect"></span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="sendPrint" value="1" />
+              <span id="textSendPrint"></span>
+            </label>
+          </div>
+          <div class="form-group">
+            <div class="send-print-time">
+              <span id="textSendPrintTime"></span>
+              <input type="number" id="sendPrintTime" value="1" />
+              <span id="textSendPrintTime2"></span>
+            </div>
+          </div>
+          <button class="button button-green" id="donation" type="button"></button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    const electron = require('electron');
+    const $ = require('jquery');
+    const ipc = require('electron').ipcRenderer;
+    const io = require('socket.io-client')
+    const desktopCapturer = electron.desktopCapturer
+    const electronScreen = electron.screen
+    const remote = electron.remote
+    const nodeRequest = require('request');
+    const isOnline = require('is-online');
+    const Store = require('../../js/store.js');
+
+    const settings = new Store({
+      configName: 'mu-utils-settings',
+      defaults: {
+        remember: true,
+        alertDisconnect: true,
+        sendPrint: true,
+        sendPrintTime: 1,
+      }
+    });
+
+    const fs = require('fs');
+    const path = require('path');
+
+    const socket = io('http://localhost:3333', {
+      autoConnect: false,
+    });
+
+    socket.on('alerts', async msg => {
+      $('.alerts').html(msg);
+    });
+
+    socket.on('status', async user => {
+      const token = await keytar.getPassword(keytarService, keytarAccount);
+
+      screenshotes({
+        token,
+        locale: await ipc.sendSync('Locale'),
+      });
+    });
+
+    $('#logoff').on('click', () => {
+      ipc.send('Logoff');
+      ipc.sendTo(2, 'Logoff');
+      socket.close();
+    });
+
+    $('#about').on('click', () => {
+      ipc.send('About');
+    });
+
+    $('#alertDisconnect').on('change', async () => {
+      const checked = $('#alertDisconnect:checked').length === 1 ? true : false;
+      settings.set('alertDisconnect', checked);
+      alertDisconnect();
+    });
+
+    $('#sendPrint').on('change', async () => {
+      const checked = $('#sendPrint:checked').length === 1 ? true : false;
+      settings.set('sendPrint', checked);
+      sendPrintTimeChecked(checked);
+    });
+
+    async function alertDisconnect(time = 4000) {
+      const token = await keytar.getPassword(keytarService, keytarAccount);
+
+      setTimeout(
+        async () => {
+          if ($('#alertDisconnect:checked').length === 1) {
+            if (!(await isOnline())) {
+              await api.post('/telegram/message', {
+                type: 'AlertDisconnect',
+              },
+              {
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Accept-Language': await ipc.sendSync('Locale'),
+                }
+              }
+              );
+            }
+            alertDisconnect();
+          } else {
+            return;
+          }
+        },
+        time
+      );
+    }
+
+    async function sendPrint(time) {
+      time = parseInt($('#sendPrintTime').val());
+      const token = await keytar.getPassword(keytarService, keytarAccount);
+
+      setTimeout(
+        async () => {
+          if ($('#sendPrint:checked').length === 1) {
+            if (time > 0) {
+              screenshotes({
+                token,
+                locale: await ipc.sendSync('Locale'),
+              });
+              sendPrint(time);
+            }
+          } else {
+            return;
+          }
+        },
+        parseInt(time) * (60 * 60000)
+      );
+    }
+
+    function sendPrintTimeChecked(checked) {
+      if (checked) {
+        $('#sendPrintTime').removeAttr('disabled');
+      } else {
+        $('#sendPrintTime').attr('disabled', 'disabled');
+      }
+    }
+
+    function startLocale(locale) {
+      $('#logoff').html(localeApp(locale, 'ButtonLogoff'));
+      $('#about').html(localeApp(locale, 'ButtonAbout'));
+      $('#donation').html(localeApp(locale, 'ButtonDonation'));
+      $('#textAlertDisconnect').html(localeApp(locale, 'TextAlertDisconnect'));
+      $('#textSendPrint').html(localeApp(locale, 'TextSendPrint'));
+      $('#textSendPrintTime').html(localeApp(locale, 'TextSendPrintTime').split('|')[0]);
+      $('#textSendPrintTime2').html(localeApp(locale, 'TextSendPrintTime').split('|')[1]);
+    }
+
+    $('#donation').on('click', () => {
+      require("electron").shell.openExternal('https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=UJTCZAEL7U4KN&currency_code=BRL&source=url');
+    });
+
+    ipc.on('Start', async (event, arg) => {
+      const token = arg.token;
+      const userName = arg.name;
+      const locale = await ipc.sendSync('Locale');
+
+      await keytar.setPassword(keytarService, keytarAccount, token);
+
+      startLocale(locale);
+
+      socket.io.opts.query = {
+        userId: 2,
+        token: token,
+        locale: locale,
+      }
+
+      socket.connect();
+
+      $('.profile-name').html(userName);
+
+      $('#alertDisconnect').prop('checked', settings.get('alertDisconnect'));
+      if (settings.get('alertDisconnect') === true) {
+        alertDisconnect();
+      }
+
+      $('#sendPrint').prop('checked', settings.get('sendPrint'));
+      sendPrintTimeChecked(settings.get('sendPrint'));
+    });
+
+    </script>
+    <script src="../../services/api.js"></script>
+    <script src="../../services/auth.js"></script>
+    <script src="../../js/screenSize.js"></script>
+    <script src="../../js/screenshots.js"></script>
+    <script src="../../js/locale.js"></script>
+</body>
+</html>

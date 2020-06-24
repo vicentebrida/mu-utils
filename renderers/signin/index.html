@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" type="text/css" href="../../styles/global.css">
+  <link rel="stylesheet" type="text/css" href="../../styles/theme.css">
+  <link rel="stylesheet" type="text/css" href="./style.css">
+
+  <style>
+    .wrapper {
+      height: 100%;
+      background-color: #44475a;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .content {
+      width: 100%;
+      max-width: 315px;
+      text-align: center;
+    }
+
+    .content .header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .content .header img {
+      width: 54px;
+      margin-right: 10px;
+    }
+
+    .content .header h1 {
+      font-size: 32px;
+      font-weight: bold;
+      color: #bd93f9;
+    }
+
+    .content form {
+      margin-top: 30px;
+    }
+
+    .content a {
+      color: #f8f8f2;
+      margin-top: 15px;
+      opacity: 0.7;
+    }
+
+    .content a:hover {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div id="root">
+    <div class="wrapper">
+      <div class="content">
+        <div class="header">
+          <h1>Mu Utils</h1>
+        </div>
+        <form>
+          <div class="form-group">
+            <input type="text" class="form-control" id="username" placeholder="Username" value="admin" />
+          </div>
+          <div class="form-group">
+            <input type="password" class="form-control" id="password" placeholder="Password" value="1234" />
+          </div>
+
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="remember" value="1" checked />
+              <span>Manter logado</span>
+            </label>
+          </div>
+
+          <button class="button button-primary" id="buttonSignIn" type="button">Acessar</button>
+
+          <a href="#">Criar conta</a>
+        </form>
+      </div>
+    </div>
+  </div>
+  <script>
+    const electron = require('electron');
+    const $ = require('jquery');
+    const { dialog } = electron.remote;
+    const ipc = electron.ipcRenderer;
+
+    const StoreSignIn = require('../../js/store.js');
+
+    const settings = new StoreSignIn({
+      configName: 'mu-utils-settings'
+    });
+
+    $(document).ready(function() {
+      $('#remember').prop('checked', settings.get('remember'));
+    });
+
+    ipc.on('Logoff', (event) => {
+      settings.set('remember', false);
+      $('#remember').prop('checked', false);
+    });
+
+    $('#remember').on('change', async () => {
+      const checked = $('#remember:checked').length === 1 ? true : false;
+      settings.set('remember', checked);
+    });
+
+    $('#buttonSignIn').on('click', async () => {
+      const buttonText = $('#buttonSignIn').html();
+      const username = $('#username').val();
+      const password = $('#password').val();
+      const remember = $('#remember:checked').length === 1 ? true : false;
+
+      $('#buttonSignIn').html('Acessando...');
+
+      const session = await api
+        .post(
+          '/sessions',
+          {
+            username,
+            password
+          },
+          {
+            progress: (e) => {
+              console.log(e);
+            }
+          }
+        )
+        .catch(function (err) {
+          $('#buttonSignIn').html(buttonText);
+          dialog.showErrorBox('Error', 'Teste');
+          return;
+        });
+
+      $('#buttonSignIn').html(buttonText);
+
+      const { user, token } = session.data;
+
+      ipc.send('SignIn', 'success');
+      ipc.sendTo(1, 'Start', {
+        token,
+        name: user.name
+      });
+    });
+  </script>
+  <script src="../../services/api.js"></script>
+  <script src="../../js/store.js"></script>
+</body>
+</html>

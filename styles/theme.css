@@ -1,0 +1,210 @@
+.button {
+  padding: .375rem .75rem;
+  font-weight: bold;
+  color: #f8f8f2;
+  line-height: 1.5;
+  border: 0;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: background 0.2s;
+}
+
+.button-lg {
+  padding: .5rem 1rem;
+  font-size: 1.25rem;
+  line-height: 1.5;
+  border-radius: .3rem;
+}
+
+.button-sm {
+  padding: .25rem .5rem;
+  font-size: .875rem;
+  line-height: 1.5;
+  border-radius: .2rem;
+}
+
+.button-primary {
+  background: #6272a4;
+}
+
+.button-primary:hover {
+  background: #566595;
+}
+
+.button-secondary {
+  color: #282a36;
+  background: #f8f8f2;
+}
+
+.button-secondary:hover {
+  background: #e6e6d2;
+}
+
+.button-purple {
+  background: #bd93f9;
+}
+
+.button-purple:hover {
+  background: #a66df6;
+}
+
+.button-cyan {
+  background: #8be9fd;
+}
+
+.button-cyan:hover {
+  background: #64e1fc;
+}
+
+.button-green {
+  background: #50fa7b;
+}
+
+.button-green:hover {
+  background: #2ff962;
+}
+
+.button-orange {
+  background: #ffb86c;
+}
+
+.button-orange:hover {
+  background: #ffa647;
+}
+
+.button-pink {
+  background: #ff79c6;
+}
+
+.button-pink:hover {
+  background: #ff53b6;
+}
+
+.button-red {
+  background: #ff5555;
+}
+
+.button-red:hover {
+  background: #ff3232;
+}
+
+.button-yellow {
+  background: #f1fa8c;
+}
+
+.button-yellow:hover {
+  background: #ecf866;
+}
+
+.alert {
+  position: relative;
+  padding: .75rem 1.25rem;
+  margin-bottom: 1rem;
+  border: 1px solid transparent;
+  border-radius: .25rem;
+  color: #f8f8f2;
+}
+
+.alert-primary {
+  background-color: #282a36;
+}
+
+.alert-danger {
+  background-color: #ff5555;
+}
+
+.alert-success {
+  background-color: #50fa7b;
+}
+
+.alert-info {
+  background-color: #8be9fd;
+}
+
+.alert-warning {
+  background-color: #f1fa8c;
+}
+
+.alert-link {
+  font-weight: 700;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+form input {
+  background: #282a36;
+  border: 1px solid #14141b;
+  border-radius: 4px;
+  padding: 10px 15px;
+  color: #f8f8f2;
+  margin: 0px;
+}
+
+form input::placeholder{
+  opacity: 0.7;
+}
+
+form label {
+  display: flex;
+  align-items: center;
+  color: #f8f8f2;
+}
+
+form label input {
+  margin: 0px;
+}
+
+form label span {
+  padding-left: 5px;
+}
+
+form button {
+  margin: 5px 0 0;
+}
+
+label {
+  display: inline-block;
+  margin-bottom: .5rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  padding: .375rem .75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.form-check {
+  position: relative;
+  display: block;
+  padding-left: 1.25rem;
+}
+
+.form-check-label {
+  margin-bottom: 0;
+}
+
+.form-check-input {
+  position: absolute;
+  margin-top: .3rem;
+  margin-left: -1.25rem;
+}
+
+.form-check-inline {
+  display: -webkit-inline-box;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  padding-left: 0;
+  margin-right: .75rem;
+}
