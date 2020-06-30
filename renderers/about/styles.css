@@ -1,0 +1,38 @@
+.wrapper {
+  height: 100%;
+  background-color: #44475a;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.content {
+  width: 100%;
+  max-width: 600px;
+  text-align: center;
+  color: #f8f8f2;
+}
+
+.content .header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 10px;
+}
+
+.content .header h1 {
+  font-size: 32px;
+  font-weight: bold;
+  color: #bd93f9;
+}
+
+.content a {
+  color: #f8f8f2;
+}
+
+.contributors {
+  font-weight: bold;
+  color: #50fa7b;
+  padding-top: 10px;
+  padding-bottom: 5px;
+}

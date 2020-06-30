@@ -1,0 +1,91 @@
+.wrapper {
+  height: 100%;
+  background-color: #44475a;
+}
+
+.header {
+  background: #282a36;
+  box-shadow: 0 5px 10px 0 rgba(0,0,0,.15);
+}
+
+.header .header-content {
+  height: 64px;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 0 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+}
+
+.logo div {
+  margin-right: 20px;
+  padding-right: 20px;
+  border-right: 1px solid #f8f8f2;
+}
+
+.logo img {
+  width: 54px;
+  margin-right: 10px;
+}
+
+.logo h1 {
+  font-size: 27px;
+  font-weight: bold;
+  color: #bd93f9;
+}
+
+nav button {
+  margin: 0 5px;
+}
+
+aside {
+  display: flex;
+  align-items: center;
+}
+
+.profile {
+  display: flex;
+  margin-left: 20px;
+  padding-left: 20px;
+  border-left: 1px solid #f8f8f2;
+}
+
+.profile div {
+  text-align: right;
+  margin-right: 10px;
+}
+
+.profile-name {
+  display: block;
+  color: #bd93f9;
+  font-weight: bold;
+}
+
+.profile div a {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, .6);
+}
+
+.container {
+  max-width: 650px;
+  margin: 25px auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.container .send-print-time {
+  color: #f8f8f2;
+}
+
+.container .send-print-time input {
+  margin: 0 5px;
+  width: 70px;
+}

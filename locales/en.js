@@ -1,0 +1,3 @@
+{
+  "ButtonSignUp": "Sign Up"
+}

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" type="text/css" href="../../styles/global.css">
+  <link rel="stylesheet" type="text/css" href="../../styles/theme.css">
+  <link rel="stylesheet" type="text/css" href="./styles.css">
+</head>
+<body>
+  <div class="hideAll">&nbsp;</div>
+  <div id="root">
+    <div class="wrapper">
+      <div class="content">
+        <div class="header">
+          <h1>Mu Utils</h1>
+        </div>
+        <form>
+          <div class="form-group">
+            <input type="text" class="form-control" id="name" placeholder="Name" value="José" />
+          </div>
+          <div class="form-group">
+            <input type="text" class="form-control" id="email" placeholder="E-mail" value="vicente@gmail.com" />
+          </div>
+          <div class="form-group">
+            <input type="text" class="form-control" id="username" placeholder="Username" value="vicente" />
+          </div>
+          <div class="form-group">
+            <input type="password" class="form-control" id="password" placeholder="Password" value="123456" />
+          </div>
+
+          <button class="button button-primary" id="buttonSignUp" type="button">Sign Up</button>
+
+          <a href="#" id="linkSignIn">I have account</a>
+        </form>
+      </div>
+    </div>
+  </div>
+  <script>
+    const electron = require('electron');
+    const $ = require('jquery');
+    const { dialog } = electron.remote;
+    const ipc = electron.ipcRenderer;
+
+    const i18n = new(require('../../js/i18n'));
+
+    window.onload = () => {
+      $('.hideAll').css('display', 'none');
+    };
+
+    $('#linkSignIn').on('click', () => {
+      ipc.send('SignIn');
+    });
+
+    function clsInputs() {
+      $('#name').val('');
+      $('#email').val('');
+      $('#username').val('');
+      $('#password').val('');
+    }
+
+    $('#buttonSignUp').on('click', async () => {
+      const buttonText = $('#buttonSignUp').html();
+      const name = $('#name').val();
+      const email = $('#email').val();
+      const username = $('#username').val();
+      const password = $('#password').val();
+
+      $('#buttonSignUp').html(i18n.__('Signing up...'));
+
+      await api
+        .post(
+          '/users',
+          {
+            username,
+            password,
+            name,
+            email,
+          },
+          {
+            progress: (e) => {
+              console.log(e);
+            }
+          }
+        )
+        .then(function (response) {
+          clsInputs();
+          dialog.showMessageBox({
+            type: 'info',
+            title: 'Info',
+            message: i18n.__('Account successfully registered.')
+          });
+        })
+        .catch(function (err) {
+          dialog.showErrorBox(i18n.__('Error'), i18n.__('Error registering, try again.'));
+        })
+        .then(function () {
+          $('#buttonSignUp').html(buttonText);
+        });
+    });
+  </script>
+  <script src="../../services/api.js"></script>
+  <script src="../../js/translations.js"></script>
+</body>
+</html>

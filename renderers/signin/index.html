@@ -6,56 +6,10 @@
 
   <link rel="stylesheet" type="text/css" href="../../styles/global.css">
   <link rel="stylesheet" type="text/css" href="../../styles/theme.css">
-  <link rel="stylesheet" type="text/css" href="./style.css">
-
-  <style>
-    .wrapper {
-      height: 100%;
-      background-color: #44475a;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .content {
-      width: 100%;
-      max-width: 315px;
-      text-align: center;
-    }
-
-    .content .header {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .content .header img {
-      width: 54px;
-      margin-right: 10px;
-    }
-
-    .content .header h1 {
-      font-size: 32px;
-      font-weight: bold;
-      color: #bd93f9;
-    }
-
-    .content form {
-      margin-top: 30px;
-    }
-
-    .content a {
-      color: #f8f8f2;
-      margin-top: 15px;
-      opacity: 0.7;
-    }
-
-    .content a:hover {
-      opacity: 1;
-    }
-  </style>
+  <link rel="stylesheet" type="text/css" href="./styles.css">
 </head>
 <body>
+  <div class="hideAll">&nbsp;</div>
   <div id="root">
     <div class="wrapper">
       <div class="content">
@@ -73,13 +27,13 @@
           <div class="form-group">
             <label>
               <input type="checkbox" id="remember" value="1" checked />
-              <span>Manter logado</span>
+              <span id="textRemember">Remember me</span>
             </label>
           </div>
 
-          <button class="button button-primary" id="buttonSignIn" type="button">Acessar</button>
+          <button class="button button-primary" id="buttonSignIn" type="button">Sign in</button>
 
-          <a href="#">Criar conta</a>
+          <a href="#" id="linkSignUp">Create account</a>
         </form>
       </div>
     </div>
@@ -90,7 +44,12 @@
     const { dialog } = electron.remote;
     const ipc = electron.ipcRenderer;
 
+    const i18n = new(require('../../js/i18n'));
     const StoreSignIn = require('../../js/store.js');
+
+    window.onload = () => {
+      $('.hideAll').css('display', 'none');
+    };
 
     const settings = new StoreSignIn({
       configName: 'mu-utils-settings'
@@ -110,13 +69,16 @@
       settings.set('remember', checked);
     });
 
+    $('#linkSignUp').on('click', () => {
+      ipc.send('SignUp');
+    });
+
     $('#buttonSignIn').on('click', async () => {
       const buttonText = $('#buttonSignIn').html();
       const username = $('#username').val();
       const password = $('#password').val();
-      const remember = $('#remember:checked').length === 1 ? true : false;
 
-      $('#buttonSignIn').html('Acessando...');
+      $('#buttonSignIn').html(i18n.__('Signing in...'));
 
       const session = await api
         .post(
@@ -131,24 +93,26 @@
             }
           }
         )
+        .then(function (response) {
+          const { user, token } = response.data;
+
+          ipc.send('Session');
+          ipc.sendTo(1, 'Start', {
+            token,
+            name: user.name
+          });
+        })
         .catch(function (err) {
+          dialog.showErrorBox(i18n.__('Error'), i18n.__('Error accessing, try again.' + err));
+        })
+        .then(function () {
           $('#buttonSignIn').html(buttonText);
-          dialog.showErrorBox('Error', 'Teste');
-          return;
         });
-
-      $('#buttonSignIn').html(buttonText);
-
-      const { user, token } = session.data;
-
-      ipc.send('SignIn', 'success');
-      ipc.sendTo(1, 'Start', {
-        token,
-        name: user.name
-      });
     });
   </script>
   <script src="../../services/api.js"></script>
+  <script src="../../services/auth.js"></script>
   <script src="../../js/store.js"></script>
+  <script src="../../js/translations.js"></script>
 </body>
 </html>

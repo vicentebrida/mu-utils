@@ -1,24 +1,30 @@
 // require('material-design-icons/iconfont/material-icons.css');
 // require('typeface-roboto/index.css');
 
-const { app, BrowserWindow, Menu, MenuItem, ipcMain, ipcRenderer } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, Tray } = require('electron');
+const { autoUpdater } = require('electron-updater');
 const path = require('path');
 const url = require('url');
 
 let win;
-let winSignIn;
+let winSign;
 let winAbout;
 let devTools;
+let tray;
 
 function createWindow () {
   const appName = 'Mu Utils';
+  const backgroundColor = '#44475a';
   const rendersPath = path.join(__dirname, 'renderers');
   const iconPath = path.join(__dirname, 'assets', 'icons', 'icon.png');
 
+  console.log(iconPath);
+
   win = new BrowserWindow({
     title: appName,
-    width: 600,
-    height: 400,
+    backgroundColor,
+    width: 700,
+    height: 500,
     icon: iconPath,
     resizable: false,
     maximizable: false,
@@ -41,11 +47,12 @@ function createWindow () {
     app.quit();
   });
 
-  winSignIn = new BrowserWindow({
+  winSign = new BrowserWindow({
     parent: win,
     title: win.title,
-    width: 600,
-    height: 400,
+    backgroundColor,
+    width: 700,
+    height: 500,
     icon: iconPath,
     resizable: false,
     maximizable: false,
@@ -56,23 +63,24 @@ function createWindow () {
     },
   });
 
-  winSignIn.menuBarVisible = false;
+  winSign.menuBarVisible = false;
 
-  winSignIn.loadURL(url.format({
+  winSign.loadURL(url.format({
       pathname: path.join(rendersPath, 'signin', 'index.html'),
       protocol: 'file',
       slashes: true,
   }));
 
-  winSignIn.on('closed', () => {
+  winSign.on('closed', () => {
     app.quit();
   });
 
   winAbout = new BrowserWindow({
     parent: win,
     title: win.title,
-    width: 600,
-    height: 400,
+    backgroundColor,
+    width: 700,
+    height: 500,
     icon: iconPath,
     resizable: false,
     maximizable: false,
@@ -101,12 +109,41 @@ function createWindow () {
     x: 0,
     y: 0,
   });
-  winAbout.webContents.setDevToolsWebContents(devTools.webContents);
-  winAbout.webContents.openDevTools({ mode: 'detach' });
+  win.webContents.setDevToolsWebContents(devTools.webContents);
+  win.webContents.openDevTools({ mode: 'detach' });
 
-  ipcMain.on('SignIn', (event, arg) => {
+  // tray = new Tray(iconPath);
+
+  // const contextMenu = Menu.buildFromTemplate([
+  //   { label: 'Item1', type: 'radio' },
+  //   { label: 'Item2', type: 'radio' },
+  //   { label: 'Item3', type: 'radio', checked: true },
+  //   { label: 'Item4', type: 'radio' }
+  // ]);
+
+  // tray.setToolTip('Mu Utils');
+
+  // tray.setContextMenu(contextMenu);
+
+  ipcMain.on('Session', (event, arg) => {
     win.show();
-    winSignIn.hide();
+    winSign.hide();
+  });
+
+  ipcMain.on('SignIn', (event) => {
+    winSign.loadURL(url.format({
+      pathname: path.join(rendersPath, 'signin', 'index.html'),
+      protocol: 'file',
+      slashes: true,
+    }));
+  });
+
+  ipcMain.on('SignUp', (event) => {
+    winSign.loadURL(url.format({
+      pathname: path.join(rendersPath, 'signup', 'index.html'),
+      protocol: 'file',
+      slashes: true,
+    }));
   });
 
   ipcMain.on('Locale', (event) => {
@@ -114,13 +151,35 @@ function createWindow () {
   });
 
   ipcMain.on('Logoff', (event) => {
-    winSignIn.show();
+    winSign.show();
     win.hide();
   });
 
   ipcMain.on('About', (event) => {
     winAbout.show();
   });
+
+  ipcMain.on('app_version', (event) => {
+    event.sender.send('app_version', { version: app.getVersion() });
+  });
+
+  win.once('ready-to-show', () => {
+    autoUpdater.checkForUpdatesAndNotify();
+  });
 }
 
-app.whenReady().then(createWindow);
+autoUpdater.on('update-available', () => {
+  mainWindow.webContents.send('update_available');
+});
+
+autoUpdater.on('update-downloaded', () => {
+  mainWindow.webContents.send('update_downloaded');
+});
+
+ipcMain.on('restart_app', () => {
+  autoUpdater.quitAndInstall();
+});
+
+app
+  .whenReady()
+  .then(createWindow);

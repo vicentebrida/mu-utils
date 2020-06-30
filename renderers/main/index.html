@@ -6,99 +6,22 @@
 
   <link rel="stylesheet" type="text/css" href="../../styles/global.css">
   <link rel="stylesheet" type="text/css" href="../../styles/theme.css">
-  <link rel="stylesheet" type="text/css" href="./style.css">
+  <link rel="stylesheet" type="text/css" href="./styles.css">
 
   <style>
-    .wrapper {
-      height: 100%;
-      background-color: #44475a;
+    #notification {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      width: 200px;
+      padding: 20px;
+      border-radius: 5px;
+      background-color: f8f8f2;
+      box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
     }
 
-    .header {
-      background: #282a36;
-      box-shadow: 0 5px 10px 0 rgba(0,0,0,.15);
-    }
-
-    .header .header-content {
-      height: 64px;
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 0 30px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-    }
-
-    .logo div {
-      margin-right: 20px;
-      padding-right: 20px;
-      border-right: 1px solid #f8f8f2;
-    }
-
-    .logo img {
-      width: 54px;
-      margin-right: 10px;
-    }
-
-    .logo h1 {
-      font-size: 27px;
-      font-weight: bold;
-      color: #bd93f9;
-    }
-
-    nav button {
-      margin: 0 5px;
-    }
-
-    aside {
-      display: flex;
-      align-items: center;
-    }
-
-    .profile {
-      display: flex;
-      margin-left: 20px;
-      padding-left: 20px;
-      border-left: 1px solid #f8f8f2;
-    }
-
-    .profile div {
-      text-align: right;
-      margin-right: 10px;
-    }
-
-    .profile-name {
-      display: block;
-      color: #bd93f9;
-      font-weight: bold;
-    }
-
-    .profile div a {
-      display: block;
-      margin-top: 2px;
-      font-size: 12px;
-      color: rgba(255, 255, 255, .6);
-    }
-
-    .container {
-      max-width: 550px;
-      margin: 25px auto;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .container .send-print-time {
-      color: #f8f8f2;
-    }
-
-    .container .send-print-time input {
-      margin: 0 5px;
-      width: 70px;
+    .hidden {
+      display: none;
     }
   </style>
 </head>
@@ -114,15 +37,15 @@
           </div>
 
           <nav>
-            <button class="button button-secondary button-sm" id="logoff"></button>
-            <button class="button button-secondary button-sm" id="about"></button>
+            <button class="button button-secondary button-sm" id="buttonLogoff">Log out</button>
+            <button class="button button-secondary button-sm" id="buttonAbout">About</button>
           </nav>
 
           <aside>
             <div class="profile">
               <div>
                 <div class="profile-name"></div>
-                <a>Meu Perfil</a>
+                <a href="#" id="linkProfile" style="display: none;">My profile</a>
               </div>
             </div>
           </aside>
@@ -132,46 +55,69 @@
         <div class="alerts"></div>
         <form>
           <div class="form-group">
+            <label id="textSendTo">Send to</label>
             <label>
-              <input type="checkbox" id="alertDisconnect" value="1" />
-              <span id="textAlertDisconnect"></span>
+              <input type="checkbox" id="sendToTelegram" value="1" checked disabled />
+              <span>Telegram (<span id="textFollow">Follow</span> <a id="linkTelegramBot" href="#">@muutils_bot</a> <span id="textToReceive">to receive</span>)</span>
             </label>
           </div>
-          <div class="form-group">
-            <label>
-              <input type="checkbox" id="sendPrint" value="1" />
-              <span id="textSendPrint"></span>
-            </label>
-          </div>
-          <div class="form-group">
-            <div class="send-print-time">
-              <span id="textSendPrintTime"></span>
-              <input type="number" id="sendPrintTime" value="1" />
-              <span id="textSendPrintTime2"></span>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label id="textOptions">Options</label>
+            <div class="form-group">
+              <label>
+                <input type="checkbox" id="alertDisconnect" value="1" />
+                <span id="textAlertDisconnect">Warn when internet disconnects</span>
+              </label>
+            </div>
+            <div class="form-group">
+              <label>
+                <input type="checkbox" id="sendPrint" value="1" />
+                <span id="textSendPrint">Automatically send screenshots of MU windows</span>
+              </label>
+            </div>
+            <div class="form-group">
+              <div class="send-print-time">
+                <span id="textSendPrintTime">Send every</span>
+                <input type="number" id="sendPrintTime" value="1" />
+                <span id="textSendPrintTimeHours">hour(s)</span>
+              </div>
             </div>
           </div>
-          <button class="button button-green" id="donation" type="button"></button>
+          <button class="button button-green" id="buttonDonation" type="button">Like app? Donate!</button>
         </form>
       </div>
     </div>
   </div>
 
+  <div id="notification" class="hidden">
+    <p id="message"></p>
+    <button id="close-button" onClick="closeNotification()">
+      Close
+    </button>
+    <button id="restart-button" onClick="restartApp()" class="hidden">
+      Restart
+    </button>
+  </div>
 
   <script>
     const electron = require('electron');
     const $ = require('jquery');
-    const ipc = require('electron').ipcRenderer;
-    const io = require('socket.io-client')
-    const desktopCapturer = electron.desktopCapturer
-    const electronScreen = electron.screen
-    const remote = electron.remote
+    const ipc = electron.ipcRenderer;
+    const io = require('socket.io-client');
+    const desktopCapturer = electron.desktopCapturer;
+    const electronScreen = electron.screen;
+    const remote = electron.remote;
+    const { dialog } = electron.remote;
     const nodeRequest = require('request');
     const isOnline = require('is-online');
+
+    const i18n = new(require('../../js/i18n'));
     const Store = require('../../js/store.js');
 
     const settings = new Store({
       configName: 'mu-utils-settings',
       defaults: {
+        welcomeMessageShow: false,
         remember: true,
         alertDisconnect: true,
         sendPrint: true,
@@ -187,7 +133,7 @@
     });
 
     socket.on('alerts', async msg => {
-      $('.alerts').html(msg);
+      $('.alerts').append(msg);
     });
 
     socket.on('status', async user => {
@@ -199,13 +145,51 @@
       });
     });
 
-    $('#logoff').on('click', () => {
+    const notification = document.getElementById('notification');
+    const message = document.getElementById('message');
+    const restartButton = document.getElementById('restart-button');
+
+    ipc.on('update_available', () => {
+      ipc.removeAllListeners('update_available');
+      message.innerText = i18n.__('A new update is available. Downloading now...');
+      notification.classList.remove('hidden');
+    });
+
+    ipc.on('update_downloaded', () => {
+      ipc.removeAllListeners('update_downloaded');
+      message.innerText = i18n.__('Update Downloaded. It will be installed on restart. Restart now?');
+      restartButton.classList.remove('hidden');
+      notification.classList.remove('hidden');
+    });
+
+    function closeNotification() {
+      notification.classList.add('hidden');
+    }
+
+    function restartApp() {
+      ipc.send('restart_app');
+    }
+
+    $('#linkProfile').on('click', async (event) => {
+      event.preventDefault();
+    })
+
+    $('#linkTelegramBot').on('click', (event) => {
+      event.preventDefault();
+      require("electron").shell.openExternal('https://t.me/muutils_bot');
+    });
+
+    $('#buttonDonation').on('click', () => {
+      require("electron").shell.openExternal('https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=UJTCZAEL7U4KN&currency_code=BRL&source=url');
+    });
+
+    $('#buttonLogoff').on('click', () => {
       ipc.send('Logoff');
       ipc.sendTo(2, 'Logoff');
       socket.close();
     });
 
-    $('#about').on('click', () => {
+    $('#buttonAbout').on('click', () => {
       ipc.send('About');
     });
 
@@ -219,6 +203,14 @@
       const checked = $('#sendPrint:checked').length === 1 ? true : false;
       settings.set('sendPrint', checked);
       sendPrintTimeChecked(checked);
+      if (checked) {
+        dialog.showMessageBox({
+          type: 'info',
+          title: 'Info',
+          message: i18n.__('Do not leave the MU window(s) minimized so that screenshots are sent.')
+        });
+        sendPrint();
+      }
     });
 
     async function alertDisconnect(time = 4000) {
@@ -228,16 +220,24 @@
         async () => {
           if ($('#alertDisconnect:checked').length === 1) {
             if (!(await isOnline())) {
-              await api.post('/telegram/message', {
-                type: 'AlertDisconnect',
-              },
-              {
-                headers: {
-                  'Authorization': `Bearer ${token}`,
-                  'Accept-Language': await ipc.sendSync('Locale'),
-                }
+              let i;
+              for (i = 0; i <= 1; i++) {
+                await api.post('/telegram/message', {
+                  message: 'Your computer has no connection to the internet.',
+                },
+                {
+                  headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept-Language': await ipc.sendSync('Locale'),
+                  }
+                })
+                .then(function (response) {
+                  i = 2;
+                })
+                .catch(function (err) {
+                  i = 0;
+                });
               }
-              );
             }
             alertDisconnect();
           } else {
@@ -278,28 +278,12 @@
       }
     }
 
-    function startLocale(locale) {
-      $('#logoff').html(localeApp(locale, 'ButtonLogoff'));
-      $('#about').html(localeApp(locale, 'ButtonAbout'));
-      $('#donation').html(localeApp(locale, 'ButtonDonation'));
-      $('#textAlertDisconnect').html(localeApp(locale, 'TextAlertDisconnect'));
-      $('#textSendPrint').html(localeApp(locale, 'TextSendPrint'));
-      $('#textSendPrintTime').html(localeApp(locale, 'TextSendPrintTime').split('|')[0]);
-      $('#textSendPrintTime2').html(localeApp(locale, 'TextSendPrintTime').split('|')[1]);
-    }
-
-    $('#donation').on('click', () => {
-      require("electron").shell.openExternal('https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=UJTCZAEL7U4KN&currency_code=BRL&source=url');
-    });
-
     ipc.on('Start', async (event, arg) => {
       const token = arg.token;
       const userName = arg.name;
       const locale = await ipc.sendSync('Locale');
 
       await keytar.setPassword(keytarService, keytarAccount, token);
-
-      startLocale(locale);
 
       socket.io.opts.query = {
         userId: 2,
@@ -312,19 +296,35 @@
       $('.profile-name').html(userName);
 
       $('#alertDisconnect').prop('checked', settings.get('alertDisconnect'));
-      if (settings.get('alertDisconnect') === true) {
+      if (settings.get('alertDisconnect')) {
         alertDisconnect();
       }
 
       $('#sendPrint').prop('checked', settings.get('sendPrint'));
       sendPrintTimeChecked(settings.get('sendPrint'));
+      if (settings.get('sendPrint')) {
+        sendPrint();
+      }
+
+      if (!settings.get('welcomeMessageShow')) {
+        dialog.showMessageBox({
+          type: 'info',
+          title: i18n.__('Welcome'),
+          message: i18n.__('Hello, I hope you like the app, if you want to donate and help the project, feel free.')
+        })
+        settings.set('welcomeMessageShow', true);
+      }
     });
 
+    ipc.send('app_version');
+    ipc.on('app_version', (event, arg) => {
+      ipc.removeAllListeners('app_version');
+    });
     </script>
     <script src="../../services/api.js"></script>
     <script src="../../services/auth.js"></script>
     <script src="../../js/screenSize.js"></script>
     <script src="../../js/screenshots.js"></script>
-    <script src="../../js/locale.js"></script>
+    <script src="../../js/translations.js"></script>
 </body>
 </html>

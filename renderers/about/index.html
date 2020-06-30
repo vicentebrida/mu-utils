@@ -7,48 +7,7 @@
 
   <link rel="stylesheet" type="text/css" href="../../styles/global.css">
   <link rel="stylesheet" type="text/css" href="../../styles/theme.css">
-  <link rel="stylesheet" type="text/css" href="./style.css">
-
-  <style>
-    .wrapper {
-      height: 100%;
-      background-color: #44475a;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .content {
-      width: 100%;
-      max-width: 500px;
-      text-align: center;
-      color: #f8f8f2;
-    }
-
-    .content .header {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding-bottom: 10px;
-    }
-
-    .content .header h1 {
-      font-size: 32px;
-      font-weight: bold;
-      color: #bd93f9;
-    }
-
-    .content a {
-      color: #f8f8f2;
-    }
-
-    .contributors {
-      font-weight: bold;
-      color: #50fa7b;
-      padding-top: 10px;
-      padding-bottom: 5px;
-    }
-  </style>
+  <link rel="stylesheet" type="text/css" href="./styles.css">
 </head>
 <body>
   <div id="root">
@@ -57,16 +16,19 @@
         <div class="header">
           <h1>Mu Utils</h1>
         </div>
-        <p>Versão 1.0.0</p>
-        <p>Desenvolvido por <a href="https://github.com/vicentebrida" target="_blank">@vicentebrida</a></p>
-        <p class="contributors">Doações (Obrigado)</p>
+        <p><span id="textVersion">Version</span> <span id="numberVersion"></span></p>
+        <p><span id="textDeveloped">Developed by</span> <a href="https://github.com/vicentebrida" target="_blank">@vicentebrida</a></p>
+        <p class="contributors">Donations (Thanks)</p>
         <div id="contributorsList"></div>
       </div>
     </div>
   </div>
   <script>
     const electron = require('electron');
+    const ipc = electron.ipcRenderer;
     const $ = require('jquery');
+
+    const i18n = new(require('../../js/i18n'));
 
     $(document).ready(function() {
       getContributors();
@@ -86,7 +48,14 @@
       event.preventDefault();
       require("electron").shell.openExternal(event.target.href);
     });
+
+    ipc.send('app_version');
+    ipc.on('app_version', (event, arg) => {
+      ipc.removeAllListeners('app_version');
+      $('#numberVersion').html(arg.version);
+    });
   </script>
   <script src="../../services/api.js"></script>
+  <script src="../../js/translations.js"></script>
 </body>
 </html>

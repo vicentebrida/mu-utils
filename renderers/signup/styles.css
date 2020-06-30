@@ -1,0 +1,44 @@
+.wrapper {
+  height: 100%;
+  background-color: #44475a;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.content {
+  width: 100%;
+  max-width: 315px;
+  text-align: center;
+}
+
+.content .header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.content .header img {
+  width: 54px;
+  margin-right: 10px;
+}
+
+.content .header h1 {
+  font-size: 32px;
+  font-weight: bold;
+  color: #bd93f9;
+}
+
+.content form {
+  margin-top: 30px;
+}
+
+.content a {
+  color: #f8f8f2;
+  margin-top: 15px;
+  opacity: 0.7;
+}
+
+.content a:hover {
+  opacity: 1;
+}
