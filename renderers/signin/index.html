@@ -46,13 +46,16 @@
 
     const i18n = new(require('../../js/i18n'));
     const StoreSignIn = require('../../js/store.js');
+    const envVariables = require("../../env-variables");
+
+    const { storeConfig } = envVariables;
 
     window.onload = () => {
       $('.hideAll').css('display', 'none');
     };
 
     const settings = new StoreSignIn({
-      configName: 'mu-utils-settings'
+      configName: storeConfig
     });
 
     $(document).ready(function() {

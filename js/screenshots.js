@@ -1,3 +1,7 @@
+const envVariables = require("../env-variables");
+
+const { backendUrl } = envVariables;
+
 function screenshotes(user){
   setTimeout(function() {
     func(user);
@@ -42,7 +46,7 @@ function screenshotes(user){
       };
 
       await nodeRequest.post({
-        url:'http://localhost:3333/telegram/photo',
+        url: `${backendUrl}/telegram/photo`,
         auth: {
           bearer: user.token,
         },

@@ -1,5 +1,8 @@
 const axios = require('axios');
+const envVariables = require("../env-variables");
+
+const { backendUrl } = envVariables;
 
 const api = axios.create({
-  baseURL: `http://localhost:3333`,
+  baseURL: backendUrl,
 });

@@ -113,9 +113,12 @@
 
     const i18n = new(require('../../js/i18n'));
     const Store = require('../../js/store.js');
+    const envVariables = require("../../env-variables");
+
+    const { backendUrl, storeConfig } = envVariables;
 
     const settings = new Store({
-      configName: 'mu-utils-settings',
+      configName: storeConfig,
       defaults: {
         welcomeMessageShow: false,
         remember: true,
@@ -128,7 +131,7 @@
     const fs = require('fs');
     const path = require('path');
 
-    const socket = io('http://localhost:3333', {
+    const socket = io(backendUrl, {
       autoConnect: false,
     });
 
